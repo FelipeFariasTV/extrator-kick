@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extrator de Chats da Kick</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            border-radius: 8px;
+        }
+        h1, h2 {
+            color: #53fc18;
+            border-bottom: 2px solid #53fc18;
+            padding-bottom: 10px;
+        }
+        a {
+            color: #87ceeb;
+            text-decoration: none;
+            display: block;
+            background-color: #2c2c2c;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        a:hover {
+            background-color: #3c3c3c;
+            transform: scale(1.02);
+        }
+        input, button {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+            margin-bottom: 10px;
+        }
+        button {
+            cursor: pointer;
+            background-color: #53fc18;
+            color: #1a1a1a;
+            font-weight: bold;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        #resultados {
+            margin-top: 20px;
+        }
+        .instrucoes {
+            background-color: #2c2c2c;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #53fc18;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Extrator de Chats Ao Vivo da Kick</h1>
+
+    <div class="instrucoes">
+        <p><strong>Passo 1:</strong> Vá para a página de canais que você segue na Kick.</p>
+        <p><strong>Passo 2:</strong> Clique com o botão direito em qualquer lugar da página e selecione "Salvar como..." ou "Salvar página como...". Salve o arquivo HTML completo no seu computador.</p>
+        <p><strong>Passo 3:</strong> Clique no botão "Escolher arquivo" abaixo e selecione o arquivo HTML que você acabou de salvar.</p>
+        <p><strong>Passo 4:</strong> Clique em "Processar" para ver a lista de chats dos canais ao vivo.</p>
+    </div>
+
+    <br>
+    <input type="file" id="arquivoHtml" accept=".html,.htm">
+    <button id="btnProcessar">Processar</button>
+
+    <h2>Chats Ao Vivo:</h2>
+    <div id="resultados">
+        <p>A lista de chats aparecerá aqui...</p>
+    </div>
+
+    <script>
+        document.getElementById('btnProcessar').addEventListener('click', () => {
+            const inputArquivo = document.getElementById('arquivoHtml');
+            const resultadosDiv = document.getElementById('resultados');
+            resultadosDiv.innerHTML = '<p>Processando...</p>';
+
+            if (inputArquivo.files.length === 0) {
+                resultadosDiv.innerHTML = '<p style="color: red;">Por favor, selecione um arquivo HTML primeiro.</p>';
+                return;
+            }
+
+            const arquivo = inputArquivo.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(evento) {
+                const conteudoHtml = evento.target.result;
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(conteudoHtml, 'text/html');
+
+                // A Kick usa um elemento com a classe 'live-badge-container' para indicar que um canal está ao vivo.
+                // Este seletor encontra todos esses indicadores.
+                const seletoresLive = doc.querySelectorAll('.live-badge-container');
+                
+                resultadosDiv.innerHTML = ''; // Limpa a área de resultados
+
+                if (seletoresLive.length === 0) {
+                    resultadosDiv.innerHTML = '<p>Nenhum canal ao vivo encontrado no arquivo.</p>';
+                    return;
+                }
+
+                seletoresLive.forEach(seletor => {
+                    // O nome do canal está em um link (tag <a>) que é um elemento "pai" do indicador 'live'.
+                    // Usamos .closest('a') para encontrar esse link.
+                    const linkElemento = seletor.closest('a');
+                    if (linkElemento) {
+                        // O href do link é algo como "/nomedocanal".
+                        const href = linkElemento.getAttribute('href');
+                        // Removemos a barra inicial para obter apenas o nome.
+                        const nomeDoCanal = href.substring(1);
+
+                        if (nomeDoCanal) {
+                            const chatUrl = `https://kick.com/popout/${nomeDoCanal}/chat`;
+                            
+                            const linkChat = document.createElement('a');
+                            linkChat.href = chatUrl;
+                            linkChat.textContent = nomeDoCanal;
+                            linkChat.target = '_blank'; // Abre em uma nova aba
+
+                            resultadosDiv.appendChild(linkChat);
+                        }
+                    }
+                });
+
+                if (resultadosDiv.childElementCount === 0) {
+                    resultadosDiv.innerHTML = '<p>Não foi possível extrair os nomes dos canais ao vivo. O site da Kick pode ter mudado sua estrutura.</p>';
+                }
+            };
+
+            reader.onerror = function() {
+                resultadosDiv.innerHTML = '<p style="color: red;">Ocorreu um erro ao ler o arquivo.</p>';
+            };
+
+            reader.readAsText(arquivo);
+        });
+    </script>
+
+</body>
+</html>
