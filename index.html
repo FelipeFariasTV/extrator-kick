@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de Chats da Kick (V4)</title>
+    <title>Visualizador de Chats da Kick (V5 - Estável)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
 
         :root {
-            --dark-bg: #0a192f;        /* Azul marinho escuro */
-            --light-bg: #112240;       /* Azul marinho um pouco mais claro */
-            --text-primary: #ccd6f6;   /* Cinza claro / ardósia */
-            --text-secondary: #8892b0; /* Cinza médio */
-            --accent-color: #64ffda;   /* Ciano / Verde menta */
+            --dark-bg: #0a192f;        
+            --light-bg: #112240;      
+            --text-primary: #ccd6f6;   
+            --text-secondary: #8892b0;
+            --accent-color: #64ffda;   
+            --success-color: #64ffda;
             --font-family: 'Roboto Mono', monospace;
         }
 
@@ -74,7 +75,7 @@
             font-weight: 700;
             border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.3s, transform 0.1s;
+            transition: all 0.3s ease;
             border: 2px solid var(--accent-color);
         }
 
@@ -106,6 +107,12 @@
         
         #update-btn:hover {
             background-color: rgba(100, 255, 218, 0.1);
+        }
+
+        #update-btn.success {
+            background-color: var(--accent-color);
+            color: var(--dark-bg);
+            border-color: var(--accent-color);
         }
         
         #channels-input {
@@ -143,86 +150,104 @@
     </div>
 
     <script>
-        const channelDisplay = document.getElementById('channel-display');
-        const actionBtn = document.getElementById('action-btn');
-        const channelsInput = document.getElementById('channels-input');
-        const updateBtn = document.getElementById('update-btn');
-        const remainingCountEl = document.getElementById('remaining-count');
-        const totalCountEl = document.getElementById('total-count');
+        // *** ADICIONADO: Espera a página inteira carregar antes de executar o código ***
+        document.addEventListener('DOMContentLoaded', () => {
 
-        let channels = [];
-        let currentIndex = 0;
+            const channelDisplay = document.getElementById('channel-display');
+            const actionBtn = document.getElementById('action-btn');
+            const channelsInput = document.getElementById('channels-input');
+            const updateBtn = document.getElementById('update-btn');
+            const remainingCountEl = document.getElementById('remaining-count');
+            const totalCountEl = document.getElementById('total-count');
 
-        function updateUI() {
-            const total = channels.length;
-            const remaining = total > 0 ? Math.max(0, total - currentIndex) : 0;
+            let channels = [];
+            let currentIndex = 0;
+            const originalUpdateBtnText = updateBtn.textContent;
 
-            // 1. Atualiza contadores
-            totalCountEl.textContent = total;
-            remainingCountEl.textContent = remaining;
+            function updateUI() {
+                const total = channels.length;
+                const remaining = total > 0 ? Math.max(0, total - currentIndex) : 0;
 
-            // 2. Atualiza a lista numerada na área de texto
-            if (total === 0) {
-                channelsInput.value = '';
-                channelsInput.placeholder = "Cole os nomes de usuário aqui, um por linha...";
-            } else if (currentIndex >= total) {
-                channelsInput.value = '✨ Lista Concluída! ✨';
-            } else {
-                const remainingChannels = channels
-                    .slice(currentIndex)
-                    .map((name, index) => `${currentIndex + index + 1}. ${name}`)
-                    .join('\n');
-                channelsInput.value = remainingChannels;
+                totalCountEl.textContent = total;
+                remainingCountEl.textContent = remaining;
+
+                if (total === 0) {
+                    channelsInput.value = '';
+                    channelsInput.placeholder = "Cole os nomes de usuário aqui, um por linha...";
+                } else if (currentIndex >= total) {
+                    channelsInput.value = '✨ Lista Concluída! ✨';
+                } else {
+                    const remainingChannels = channels
+                        .slice(currentIndex)
+                        .map((name, index) => `${currentIndex + index + 1}. ${name}`)
+                        .join('\n');
+                    channelsInput.value = remainingChannels;
+                }
+
+                if (total === 0) {
+                    channelDisplay.textContent = 'Aguardando';
+                    actionBtn.textContent = 'Carregue uma Lista';
+                    actionBtn.disabled = true;
+                    return;
+                }
+
+                if (currentIndex >= total) {
+                    channelDisplay.textContent = 'FIM';
+                    actionBtn.textContent = 'Recomeçar';
+                    actionBtn.disabled = false;
+                } else {
+                    channelDisplay.textContent = channels[currentIndex];
+                    actionBtn.textContent = 'Abrir Chat e Avançar';
+                    actionBtn.disabled = false;
+                }
             }
 
-            // 3. Atualiza display principal e botão de ação
-            if (total === 0) {
-                channelDisplay.textContent = 'Aguardando';
-                actionBtn.textContent = 'Carregue uma Lista';
-                actionBtn.disabled = true;
-                return;
-            }
+            updateBtn.addEventListener('click', () => {
+                const inputText = channelsInput.value;
+                const parsedChannels = inputText.split('\n').map(name => name.trim()).filter(name => name !== '');
+                
+                channels = parsedChannels;
+                currentIndex = 0;
+                
+                updateUI();
 
-            if (currentIndex >= total) {
-                channelDisplay.textContent = 'FIM';
-                actionBtn.textContent = 'Recomeçar';
-                actionBtn.disabled = false;
-            } else {
-                channelDisplay.textContent = channels[currentIndex];
-                actionBtn.textContent = 'Abrir Chat e Avançar';
-                actionBtn.disabled = false;
-            }
-        }
+                // *** ALTERADO: Feedback visual no botão em vez de alert() ***
+                updateBtn.classList.add('success');
+                if (channels.length > 0) {
+                    updateBtn.textContent = `✅ ${channels.length} Canais Carregados!`;
+                } else {
+                    updateBtn.textContent = `Lista Limpa!`;
+                }
 
-        updateBtn.addEventListener('click', () => {
-            const inputText = channelsInput.value;
-            const parsedChannels = inputText.split('\n').map(name => name.trim()).filter(name => name !== '');
+                // Volta ao texto original depois de 2 segundos
+                setTimeout(() => {
+                    updateBtn.classList.remove('success');
+                    updateBtn.textContent = originalUpdateBtnText;
+                }, 2000);
+            });
+
+            actionBtn.addEventListener('click', () => {
+                if (channels.length === 0) return;
+
+                if (currentIndex >= channels.length) {
+                    currentIndex = 0;
+                    updateUI();
+                    return;
+                }
+
+                const currentChannel = channels[currentIndex];
+                const chatUrl = `https://kick.com/popout/${currentChannel}/chat`;
+                
+                window.open(chatUrl, '_blank', 'popup=yes,width=450,height=700,scrollbars=yes');
+
+                currentIndex++;
+                updateUI();
+            });
             
-            channels = parsedChannels;
-            currentIndex = 0;
-            
-            if (channels.length > 0) {
-                alert(`${channels.length} canais carregados!`);
-            } else {
-                 alert('Nenhum canal válido inserido. A lista foi limpa.');
-            }
+            // Inicia a interface assim que o script é carregado
             updateUI();
         });
+    </script>
 
-        actionBtn.addEventListener('click', () => {
-            if (channels.length === 0) return;
-
-            if (currentIndex >= channels.length) {
-                currentIndex = 0;
-                updateUI();
-                return;
-            }
-
-            const currentChannel = channels[currentIndex];
-            // *** LINHA ALTERADA PARA A URL CORRETA DO POP-OUT ***
-            const chatUrl = `https://kick.com/popout/${currentChannel}/chat`;
-            
-            window.open(chatUrl, '_blank', 'popup=yes,width=450,height=700,scrollbars=yes');
-
-            currentIndex++;
-            update
+</body>
+</html>
