@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de Chats da Kick (V2)</title>
+    <title>Visualizador de Chats da Kick (V3)</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
 
         :root {
-            --primary-green: #00ff00;
-            --dark-bg: #1a1d1a;
-            --darker-green: #0a2a0a;
-            --medium-green: #0f4d0f;
-            --text-color: var(--primary-green);
+            --dark-bg: #0a192f;        /* Azul marinho escuro */
+            --light-bg: #112240;       /* Azul marinho um pouco mais claro */
+            --text-primary: #ccd6f6;   /* Cinza claro / ardósia */
+            --text-secondary: #8892b0; /* Cinza médio */
+            --accent-color: #64ffda;   /* Ciano / Verde menta */
+            --font-family: 'Roboto Mono', monospace;
         }
 
         body {
             background-color: var(--dark-bg);
-            color: var(--text-color);
-            font-family: 'VT323', monospace;
+            color: var(--text-primary);
+            font-family: var(--font-family);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -37,45 +38,51 @@
         }
 
         h1 {
-            font-size: 2.5rem;
-            text-transform: uppercase;
-            border-bottom: 2px solid var(--primary-green);
-            padding-bottom: 10px;
+            font-size: 2.2rem;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--light-bg);
+            padding-bottom: 15px;
             margin-bottom: 10px;
         }
 
         #channel-display {
-            border: 3px solid var(--primary-green);
-            border-radius: 15px;
-            padding: 40px 20px;
-            font-size: 4rem;
-            min-height: 100px;
+            border: 2px solid var(--light-bg);
+            border-radius: 8px;
+            padding: 30px 20px;
+            font-size: 3rem;
+            font-weight: 700;
+            min-height: 80px;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: var(--darker-green);
-            text-shadow: 0 0 10px var(--primary-green);
+            background-color: var(--light-bg);
+            color: var(--accent-color);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
+        #stats-display {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+
         .btn {
             padding: 15px;
-            font-size: 1.5rem;
-            font-family: 'VT323', monospace;
-            border: none;
-            border-radius: 10px;
+            font-size: 1.2rem;
+            font-family: var(--font-family);
+            font-weight: 700;
+            border-radius: 8px;
             cursor: pointer;
-            text-transform: uppercase;
             transition: background-color 0.3s, transform 0.1s;
+            border: 2px solid var(--accent-color);
         }
 
         .btn:disabled {
-            background-color: #333;
-            color: #777;
+            background-color: var(--light-bg);
+            color: var(--text-secondary);
             cursor: not-allowed;
-            border: 2px solid #555;
+            border-color: var(--text-secondary);
         }
         
         .btn:not(:disabled):active {
@@ -83,41 +90,36 @@
         }
         
         #action-btn {
-            background-color: var(--primary-green);
-            color: #000;
-            font-weight: bold;
+            background-color: var(--accent-color);
+            color: var(--dark-bg);
         }
 
         #action-btn:not(:disabled):hover {
-            background-color: #33ff33;
+            background-color: transparent;
+            color: var(--accent-color);
         }
 
         #update-btn {
-            background-color: var(--medium-green);
-            color: var(--text-color);
-            border: 2px solid var(--primary-green);
+            background-color: transparent;
+            color: var(--accent-color);
         }
         
         #update-btn:hover {
-            background-color: var(--darker-green);
+            background-color: rgba(100, 255, 218, 0.1);
         }
         
         #channels-input {
             width: calc(100% - 20px);
-            min-height: 100px;
-            background-color: var(--darker-green);
-            border: 2px solid var(--primary-green);
-            border-radius: 10px;
-            color: var(--text-color);
+            min-height: 120px;
+            background-color: var(--light-bg);
+            border: 1px solid var(--text-secondary);
+            border-radius: 8px;
+            color: var(--text-primary);
             padding: 10px;
-            font-family: 'VT323', monospace;
-            font-size: 1.2rem;
+            font-family: var(--font-family);
+            font-size: 1.1rem;
             resize: vertical;
-        }
-
-        ::placeholder {
-            color: var(--medium-green);
-            opacity: 1;
+            line-height: 1.5;
         }
 
     </style>
@@ -125,95 +127,106 @@
 <body>
 
     <div class="container">
-        <h1>Visualizador de Chats da Kick</h1>
+        <h1>Visualizador de Chats Kick</h1>
 
         <div id="channel-display"></div>
 
+        <div id="stats-display">
+            Restantes: <span id="remaining-count">0</span> / <span id="total-count">0</span>
+        </div>
+
         <button id="action-btn" class="btn"></button>
 
-        <textarea id="channels-input" placeholder="Cole aqui os NOMES DE USUÁRIO dos canais da Kick, um por linha...&#10;Exemplo:&#10;xqc&#10;trainwreckstv&#10;rashtein"></textarea>
+        <textarea id="channels-input" placeholder="Cole os nomes de usuário aqui, um por linha..."></textarea>
         
-        <button id="update-btn" class="btn">Atualizar Canais</button>
+        <button id="update-btn" class="btn">Carregar / Atualizar Lista</button>
     </div>
 
     <script>
-        // Referências aos elementos do HTML
         const channelDisplay = document.getElementById('channel-display');
         const actionBtn = document.getElementById('action-btn');
         const channelsInput = document.getElementById('channels-input');
         const updateBtn = document.getElementById('update-btn');
+        const remainingCountEl = document.getElementById('remaining-count');
+        const totalCountEl = document.getElementById('total-count');
 
-        // Variáveis para guardar o estado
         let channels = [];
         let currentIndex = 0;
 
-        // Função central para atualizar toda a interface
         function updateUI() {
-            // Se não houver canais carregados
-            if (channels.length === 0) {
-                channelDisplay.textContent = 'Adicione Canais';
-                actionBtn.textContent = 'Aguardando Canais';
+            const total = channels.length;
+            const remaining = total > 0 ? Math.max(0, total - currentIndex) : 0;
+
+            // 1. Atualiza contadores
+            totalCountEl.textContent = total;
+            remainingCountEl.textContent = remaining;
+
+            // 2. Atualiza a lista numerada na área de texto
+            if (total === 0) {
+                channelsInput.value = '';
+                channelsInput.placeholder = "Cole os nomes de usuário aqui, um por linha...";
+            } else if (currentIndex >= total) {
+                channelsInput.value = '✨ Lista Concluída! ✨';
+            } else {
+                const remainingChannels = channels
+                    .slice(currentIndex)
+                    .map((name, index) => `${currentIndex + index + 1}. ${name}`)
+                    .join('\n');
+                channelsInput.value = remainingChannels;
+            }
+
+            // 3. Atualiza display principal e botão de ação
+            if (total === 0) {
+                channelDisplay.textContent = 'Aguardando';
+                actionBtn.textContent = 'Carregue uma Lista';
                 actionBtn.disabled = true;
                 return;
             }
 
-            // Se o índice for igual ao tamanho da lista, significa que terminamos
-            if (currentIndex >= channels.length) {
-                channelDisplay.textContent = 'FIM DA LISTA';
+            if (currentIndex >= total) {
+                channelDisplay.textContent = 'FIM';
                 actionBtn.textContent = 'Recomeçar';
                 actionBtn.disabled = false;
             } else {
-                // Caso contrário, mostra o canal atual
                 channelDisplay.textContent = channels[currentIndex];
                 actionBtn.textContent = 'Abrir Chat e Avançar';
                 actionBtn.disabled = false;
             }
         }
 
-        // Evento do botão "Atualizar Canais"
         updateBtn.addEventListener('click', () => {
             const inputText = channelsInput.value;
             const parsedChannels = inputText.split('\n').map(name => name.trim()).filter(name => name !== '');
             
-            if (parsedChannels.length > 0) {
-                channels = parsedChannels;
-                currentIndex = 0; // Reinicia o índice para o começo da nova lista
+            channels = parsedChannels;
+            currentIndex = 0;
+            
+            if (channels.length > 0) {
                 alert(`${channels.length} canais carregados!`);
             } else {
-                channels = []; // Limpa a lista se o input for vazio
-                alert('Nenhum canal válido inserido. A lista foi limpa.');
+                 alert('Nenhum canal válido inserido. A lista foi limpa.');
             }
-            updateUI(); // Atualiza a tela com o novo estado
+            updateUI();
         });
 
-        // Evento do Botão Principal (Ação)
         actionBtn.addEventListener('click', () => {
-            // Se a lista acabou, o botão funciona como "Recomeçar"
+            if (channels.length === 0) return;
+
             if (currentIndex >= channels.length) {
                 currentIndex = 0;
                 updateUI();
-                return; // Para a execução aqui
+                return;
             }
 
-            // Se a lista ainda está ativa, o botão funciona como "Abrir e Avançar"
-            if (channels.length > 0) {
-                const currentChannel = channels[currentIndex];
-                const chatUrl = `https://kick.com/${currentChannel}/chatroom`;
-                
-                // Abre o chat em uma nova janela pop-up
-                window.open(chatUrl, '_blank', 'popup=yes,width=450,height=700');
+            const currentChannel = channels[currentIndex];
+            const chatUrl = `https://kick.com/${currentChannel}/chatroom`;
+            window.open(chatUrl, '_blank', 'popup=yes,width=450,height=700,scrollbars=yes');
 
-                // Avança para o próximo canal na lista
-                currentIndex++;
-                
-                // Atualiza a tela para mostrar o próximo canal ou a tela de "Fim"
-                updateUI();
-            }
+            currentIndex++;
+            updateUI();
         });
         
-        // Inicializa a interface assim que a página carrega
         window.onload = updateUI;
-
     </script>
 
 </body>
