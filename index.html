@@ -1,9 +1,33 @@
+Compreendi perfeitamente as correções. A versão anterior tinha um erro de interpretação da minha parte sobre o fluxo dos botões.
+
+Peço desculpas pelo erro. Criei uma nova versão que segue **exatamente** as suas novas instruções:
+
+1.  **Área para Colar os Nomes:** A caixa de texto para inserir os canais está claramente visível.
+2.  **Botão "Atualizar Canais":** Fica abaixo da caixa de texto e serve para carregar a sua lista no sistema.
+3.  **Botão Principal Dinâmico:** O botão principal agora é inteligente. Ele se chama "Abrir Chat e Avançar" e, **apenas quando a lista termina**, ele se transforma no botão "Recomeçar" para reiniciar o ciclo.
+
+Este novo código está muito mais alinhado com o que você imaginou.
+
+-----
+
+### Como Usar (O processo continua o mesmo)
+
+1.  **Copie o código** completo abaixo.
+2.  **Cole** em um editor de texto (Bloco de Notas, por exemplo).
+3.  **Salve o arquivo** com a extensão `.html` (ex: `visualizador_kick.html`).
+4.  **Abra esse arquivo** no seu navegador de preferência.
+
+-----
+
+### Código Corrigido e Melhorado
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de Chats da Kick</title>
+    <title>Visualizador de Chats da Kick (V2)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -22,8 +46,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px 0;
             text-align: center;
         }
 
@@ -40,7 +65,7 @@
             text-transform: uppercase;
             border-bottom: 2px solid var(--primary-green);
             padding-bottom: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         #channel-display {
@@ -70,27 +95,34 @@
             transition: background-color 0.3s, transform 0.1s;
         }
 
-        .btn:active {
+        .btn:disabled {
+            background-color: #333;
+            color: #777;
+            cursor: not-allowed;
+            border: 2px solid #555;
+        }
+        
+        .btn:not(:disabled):active {
             transform: scale(0.98);
         }
         
-        #open-advance-btn {
+        #action-btn {
             background-color: var(--primary-green);
             color: #000;
             font-weight: bold;
         }
 
-        #open-advance-btn:hover {
+        #action-btn:not(:disabled):hover {
             background-color: #33ff33;
         }
 
-        #restart-btn, #update-btn {
+        #update-btn {
             background-color: var(--medium-green);
             color: var(--text-color);
             border: 2px solid var(--primary-green);
         }
         
-        #restart-btn:hover, #update-btn:hover {
+        #update-btn:hover {
             background-color: var(--darker-green);
         }
         
@@ -104,6 +136,7 @@
             padding: 10px;
             font-family: 'VT323', monospace;
             font-size: 1.2rem;
+            resize: vertical;
         }
 
         ::placeholder {
@@ -118,9 +151,95 @@
     <div class="container">
         <h1>Visualizador de Chats da Kick</h1>
 
-        <div id="channel-display">INICIE</div>
+        <div id="channel-display"></div>
 
-        <button id="open-advance-btn" class="btn">Abrir Chat e Avançar</button>
-        <button id="restart-btn" class="btn">Recomeçar</button>
+        <button id="action-btn" class="btn"></button>
 
-        <textarea id="channels-input" placeholder="Cole aqui os NOMES DE USUÁRIO dos canais da Kick, um por linha...&#10;Exemplo:&#10;x
+        <textarea id="channels-input" placeholder="Cole aqui os NOMES DE USUÁRIO dos canais da Kick, um por linha...&#10;Exemplo:&#10;xqc&#10;trainwreckstv&#10;rashtein"></textarea>
+        
+        <button id="update-btn" class="btn">Atualizar Canais</button>
+    </div>
+
+    <script>
+        // Referências aos elementos do HTML
+        const channelDisplay = document.getElementById('channel-display');
+        const actionBtn = document.getElementById('action-btn');
+        const channelsInput = document.getElementById('channels-input');
+        const updateBtn = document.getElementById('update-btn');
+
+        // Variáveis para guardar o estado
+        let channels = [];
+        let currentIndex = 0;
+
+        // Função central para atualizar toda a interface
+        function updateUI() {
+            // Se não houver canais carregados
+            if (channels.length === 0) {
+                channelDisplay.textContent = 'Adicione Canais';
+                actionBtn.textContent = 'Aguardando Canais';
+                actionBtn.disabled = true;
+                return;
+            }
+
+            // Se o índice for igual ao tamanho da lista, significa que terminamos
+            if (currentIndex >= channels.length) {
+                channelDisplay.textContent = 'FIM DA LISTA';
+                actionBtn.textContent = 'Recomeçar';
+                actionBtn.disabled = false;
+            } else {
+                // Caso contrário, mostra o canal atual
+                channelDisplay.textContent = channels[currentIndex];
+                actionBtn.textContent = 'Abrir Chat e Avançar';
+                actionBtn.disabled = false;
+            }
+        }
+
+        // Evento do botão "Atualizar Canais"
+        updateBtn.addEventListener('click', () => {
+            const inputText = channelsInput.value;
+            const parsedChannels = inputText.split('\n').map(name => name.trim()).filter(name => name !== '');
+            
+            if (parsedChannels.length > 0) {
+                channels = parsedChannels;
+                currentIndex = 0; // Reinicia o índice para o começo da nova lista
+                alert(`${channels.length} canais carregados!`);
+            } else {
+                channels = []; // Limpa a lista se o input for vazio
+                alert('Nenhum canal válido inserido. A lista foi limpa.');
+            }
+            updateUI(); // Atualiza a tela com o novo estado
+        });
+
+        // Evento do Botão Principal (Ação)
+        actionBtn.addEventListener('click', () => {
+            // Se a lista acabou, o botão funciona como "Recomeçar"
+            if (currentIndex >= channels.length) {
+                currentIndex = 0;
+                updateUI();
+                return; // Para a execução aqui
+            }
+
+            // Se a lista ainda está ativa, o botão funciona como "Abrir e Avançar"
+            if (channels.length > 0) {
+                const currentChannel = channels[currentIndex];
+                const chatUrl = `https://kick.com/${currentChannel}/chatroom`;
+                
+                // Abre o chat em uma nova janela pop-up
+                window.open(chatUrl, '_blank', 'popup=yes,width=450,height=700');
+
+                // Avança para o próximo canal na lista
+                currentIndex++;
+                
+                // Atualiza a tela para mostrar o próximo canal ou a tela de "Fim"
+                updateUI();
+            }
+        });
+        
+        // Inicializa a interface assim que a página carrega
+        window.onload = updateUI;
+
+    </script>
+
+</body>
+</html>
+```
