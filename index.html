@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de Chats da Kick (V5 - Estável)</title>
+    <title>Visualizador de Chats da Kick (V7 - Opção Leve)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
 
@@ -150,9 +150,13 @@
     </div>
 
     <script>
-        // *** ADICIONADO: Espera a página inteira carregar antes de executar o código ***
         document.addEventListener('DOMContentLoaded', () => {
 
+            // --- CONFIGURAÇÃO DO CHAT ---
+            // Para um chat MUITO mais leve, mude para 'gabs'.
+            // Para o chat padrão da Kick, use 'oficial'.
+            const tipoDeChat = 'oficial'; // Altere aqui: 'oficial' ou 'gabs'
+            
             const channelDisplay = document.getElementById('channel-display');
             const actionBtn = document.getElementById('action-btn');
             const channelsInput = document.getElementById('channels-input');
@@ -163,11 +167,12 @@
             let channels = [];
             let currentIndex = 0;
             const originalUpdateBtnText = updateBtn.textContent;
+            
+            let chatWindow = null;
 
             function updateUI() {
                 const total = channels.length;
                 const remaining = total > 0 ? Math.max(0, total - currentIndex) : 0;
-
                 totalCountEl.textContent = total;
                 remainingCountEl.textContent = remaining;
 
@@ -177,10 +182,7 @@
                 } else if (currentIndex >= total) {
                     channelsInput.value = '✨ Lista Concluída! ✨';
                 } else {
-                    const remainingChannels = channels
-                        .slice(currentIndex)
-                        .map((name, index) => `${currentIndex + index + 1}. ${name}`)
-                        .join('\n');
+                    const remainingChannels = channels.slice(currentIndex).map((name, index) => `${currentIndex + index + 1}. ${name}`).join('\n');
                     channelsInput.value = remainingChannels;
                 }
 
@@ -188,10 +190,7 @@
                     channelDisplay.textContent = 'Aguardando';
                     actionBtn.textContent = 'Carregue uma Lista';
                     actionBtn.disabled = true;
-                    return;
-                }
-
-                if (currentIndex >= total) {
+                } else if (currentIndex >= total) {
                     channelDisplay.textContent = 'FIM';
                     actionBtn.textContent = 'Recomeçar';
                     actionBtn.disabled = false;
@@ -205,21 +204,15 @@
             updateBtn.addEventListener('click', () => {
                 const inputText = channelsInput.value;
                 const parsedChannels = inputText.split('\n').map(name => name.trim()).filter(name => name !== '');
-                
                 channels = parsedChannels;
                 currentIndex = 0;
-                
                 updateUI();
-
-                // *** ALTERADO: Feedback visual no botão em vez de alert() ***
                 updateBtn.classList.add('success');
                 if (channels.length > 0) {
                     updateBtn.textContent = `✅ ${channels.length} Canais Carregados!`;
                 } else {
                     updateBtn.textContent = `Lista Limpa!`;
                 }
-
-                // Volta ao texto original depois de 2 segundos
                 setTimeout(() => {
                     updateBtn.classList.remove('success');
                     updateBtn.textContent = originalUpdateBtnText;
@@ -231,20 +224,35 @@
 
                 if (currentIndex >= channels.length) {
                     currentIndex = 0;
+                    if(chatWindow && !chatWindow.closed) {
+                        chatWindow.close();
+                    }
+                    chatWindow = null;
                     updateUI();
                     return;
                 }
 
                 const currentChannel = channels[currentIndex];
-                const chatUrl = `https://kick.com/popout/${currentChannel}/chat`;
-                
-                window.open(chatUrl, '_blank', 'popup=yes,width=450,height=700,scrollbars=yes');
+                let chatUrl = '';
+
+                // *** LÓGICA DE ESCOLHA DA URL DO CHAT ***
+                if (tipoDeChat === 'gabs') {
+                    chatUrl = `https://gabs.gg/chat/kick/${currentChannel}`;
+                } else { // Padrão é 'oficial'
+                    chatUrl = `https://kick.com/popout/${currentChannel}/chat`;
+                }
+
+                if (chatWindow === null || chatWindow.closed) {
+                    chatWindow = window.open(chatUrl, 'kickChatWindow', 'popup=yes,width=450,height=700,scrollbars=yes');
+                } else {
+                    chatWindow.location.href = chatUrl;
+                    chatWindow.focus();
+                }
 
                 currentIndex++;
                 updateUI();
             });
             
-            // Inicia a interface assim que o script é carregado
             updateUI();
         });
     </script>
