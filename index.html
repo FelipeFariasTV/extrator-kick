@@ -3,116 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deck de Chats da Kick</title>
+    <title>Visualizador de Chats da Kick</title>
     <style>
         :root {
-            --card-background-color: #1a2c21;
-            --card-text-color: #00ff00; /* Verde neon característico da Kick */
-            --button-bg-color: #00b300;
+            --bg-color: #0f1a14;
+            --display-bg-color: #1a2c21;
+            --text-color: #00ff00; /* Verde neon característico da Kick */
+            --primary-button-bg: #00b300;
+            --primary-button-hover-bg: #00d600;
+            --secondary-button-bg: #334a3d;
             --button-text-color: #ffffff;
-            --button-hover-bg-color: #009900;
-            --container-bg-color: #0f1a14;
             --border-color: #00ff00;
         }
 
         body {
-            font-family: 'Roboto', 'Segoe UI', sans-serif;
-            background-color: var(--container-bg-color);
-            color: var(--card-text-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            overflow: hidden;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
         }
 
         h1 {
             border-bottom: 2px solid var(--border-color);
             padding-bottom: 10px;
+            margin-bottom: 30px;
         }
 
-        .deck-container {
-            position: relative;
-            width: 90%;
-            max-width: 400px;
-            height: 250px; /* Altura ajustada para um card mais horizontal */
-            margin-bottom: 2rem;
-        }
-
-        .card {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background-color: var(--card-background-color);
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
-            transform-origin: center;
-            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s ease;
-            cursor: pointer;
+        .channel-display {
+            background-color: var(--display-bg-color);
             border: 2px solid var(--border-color);
+            border-radius: 15px;
+            padding: 40px 20px;
+            margin-bottom: 25px;
+            min-height: 120px;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
+            transition: background-color 0.3s;
         }
-        
-        .card-content h2 {
+
+        .channel-display h2 {
             margin: 0;
-            font-size: 2.5rem;
+            font-size: clamp(1.8rem, 5vw, 3rem); /* Tamanho de fonte responsivo */
             text-transform: uppercase;
             letter-spacing: 2px;
+            word-break: break-all;
+        }
+
+        #next-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background-color: var(--primary-button-bg);
+            color: var(--button-text-color);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        #next-btn:hover:not(:disabled) {
+            background-color: var(--primary-button-hover-bg);
         }
         
-        .card-content p {
-            margin: 10px 0 0;
-            font-size: 1rem;
-            opacity: 0.8;
+        #next-btn:active:not(:disabled) {
+            transform: scale(0.98);
         }
 
-        /* Animação de descarte */
-        .card.pop-out {
-            transform: translateY(-150%) rotate(25deg);
-            opacity: 0;
-        }
-
-        .card.no-more-cards {
-            cursor: default;
+        #next-btn:disabled {
+            background-color: #222;
+            color: #666;
+            cursor: not-allowed;
         }
 
         .controls {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
+            margin-top: 25px;
+            margin-bottom: 15px;
         }
 
-        button {
-            background-color: var(--button-bg-color);
+        #restart-btn {
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: var(--secondary-button-bg);
             color: var(--button-text-color);
-            border: none;
-            padding: 12px 24px;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             cursor: pointer;
-            font-size: 1rem;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-            background-color: var(--button-hover-bg-color);
         }
 
         .update-form {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.5rem;
-            width: 90%;
-            max-width: 400px;
+            gap: 10px;
+            width: 100%;
         }
 
         .update-form textarea {
@@ -125,118 +123,104 @@
             color: white;
             font-family: inherit;
         }
+
+        .update-form button {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            background-color: var(--secondary-button-bg);
+            color: var(--button-text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Deck de Chats da Kick</h1>
+    <div class="main-container">
+        <h1>Visualizador de Chats da Kick</h1>
 
-    <div class="deck-container" id="deck-container"></div>
+        <div class="channel-display" id="channel-display">
+            <h2 id="channel-name">Carregando...</h2>
+        </div>
 
-    <div class="controls">
-        <button id="restart-btn">Recomeçar</button>
-    </div>
+        <button id="next-btn">Abrir Chat e Avançar</button>
 
-    <div class="update-form">
-        <textarea id="channels-input" placeholder="Cole aqui os NOMES DE USUÁRIO dos canais da Kick, um por linha...&#10;Exemplo:&#10;xqc&#10;trainwreckstv&#10;roshtein"></textarea>
-        <button id="update-btn">Atualizar Canais</button>
+        <div class="controls">
+            <button id="restart-btn">Recomeçar</button>
+        </div>
+
+        <div class="update-form">
+            <textarea id="channels-input" placeholder="Cole aqui os NOMES DE USUÁRIO dos canais da Kick, um por linha...&#10;Exemplo:&#10;xqc&#10;trainwreckstv&#10;roshtein"></textarea>
+            <button id="update-btn">Atualizar Canais</button>
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const deckContainer = document.getElementById('deck-container');
+            const channelNameEl = document.getElementById('channel-name');
+            const nextBtn = document.getElementById('next-btn');
             const restartBtn = document.getElementById('restart-btn');
             const updateBtn = document.getElementById('update-btn');
             const channelsInput = document.getElementById('channels-input');
 
-            // Canais iniciais de exemplo (use nomes de usuário, não URLs completas)
-            let initialChannels = [
+            let channels = [
                 'xqc',
                 'adinross',
                 'trainwreckstv'
             ];
+            let currentIndex = 0;
 
-            let originalChannels = [...initialChannels];
+            function updateDisplay() {
+                if (currentIndex < channels.length) {
+                    channelNameEl.textContent = channels[currentIndex];
+                    nextBtn.disabled = false;
+                } else {
+                    channelNameEl.textContent = 'Fim da Lista!';
+                    nextBtn.disabled = true;
+                }
+            }
 
-            function createCard(channelName, index, total) {
-                const card = document.createElement('div');
-                card.classList.add('card');
-                card.dataset.channel = channelName; // Armazena o nome do canal
-
-                card.innerHTML = `
-                    <div class="card-content">
-                        <h2>${channelName}</h2>
-                        <p>Clique para abrir o chat</p>
-                    </div>
-                `;
-
-                card.style.zIndex = total - index;
-                // Efeito de pilha visual
-                card.style.transform = `scale(${1 - (index * 0.04)}) translateY(${index * -15}px)`;
-
-                card.addEventListener('click', () => {
-                    const user = card.dataset.channel;
+            function openChatAndAdvance() {
+                if (currentIndex < channels.length) {
+                    const user = channels[currentIndex];
                     const chatUrl = `https://kick.com/${user}/chatroom`;
                     const windowFeatures = 'height=700,width=400,menubar=no,toolbar=no,location=no,status=no,resizable=yes';
                     
-                    // Abre o chat em um pop-up
                     window.open(chatUrl, `kickChat_${user}`, windowFeatures);
                     
-                    // Descarta o card da pilha
-                    card.classList.add('pop-out');
-
-                    // Remove o elemento do DOM após a animação para performance
-                    setTimeout(() => {
-                        card.remove();
-                        if (deckContainer.childElementCount === 0) {
-                            showCompletionCard();
-                        }
-                    }, 600);
-                });
-
-                return card;
+                    currentIndex++;
+                    updateDisplay();
+                }
             }
 
-            function showCompletionCard() {
-                const completionCard = document.createElement('div');
-                completionCard.classList.add('card', 'no-more-cards');
-                completionCard.innerHTML = `
-                    <div class="card-content">
-                        <h2>Fim!</h2>
-                        <p>Todos os chats foram abertos. Recomece ou atualize a lista.</p>
-                    </div>
-                `;
-                completionCard.style.zIndex = 0;
-                deckContainer.appendChild(completionCard);
-            }
-
-            function renderDeck() {
-                deckContainer.innerHTML = '';
-                const total = originalChannels.length;
-                originalChannels.forEach((channel, index) => {
-                    const card = createCard(channel, index, total);
-                    deckContainer.appendChild(card);
-                });
-            }
+            nextBtn.addEventListener('click', openChatAndAdvance);
 
             restartBtn.addEventListener('click', () => {
-                renderDeck();
+                currentIndex = 0;
+                updateDisplay();
             });
 
             updateBtn.addEventListener('click', () => {
                 const newChannelsText = channelsInput.value.trim();
                 if (newChannelsText) {
                     const newChannels = newChannelsText.split('\n').filter(name => name.trim() !== '');
-                    originalChannels = [...newChannels];
-                    renderDeck();
-                    channelsInput.value = '';
+                    if (newChannels.length > 0) {
+                        channels = newChannels;
+                        currentIndex = 0;
+                        updateDisplay();
+                        channelsInput.value = '';
+                    } else {
+                         alert('Nenhum nome de canal válido foi inserido.');
+                    }
                 } else {
                     alert('Por favor, insira os nomes de usuário na caixa de texto.');
                 }
             });
 
-            // Renderiza o deck inicial
-            renderDeck();
+            // Iniciar
+            updateDisplay();
         });
     </script>
 
