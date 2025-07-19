@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de Chats da Kick (V3)</title>
+    <title>Visualizador de Chats da Kick (V4)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
 
@@ -219,15 +219,10 @@
             }
 
             const currentChannel = channels[currentIndex];
-            const chatUrl = `https://kick.com/${currentChannel}/chatroom`;
+            // *** LINHA ALTERADA PARA A URL CORRETA DO POP-OUT ***
+            const chatUrl = `https://kick.com/popout/${currentChannel}/chat`;
+            
             window.open(chatUrl, '_blank', 'popup=yes,width=450,height=700,scrollbars=yes');
 
             currentIndex++;
-            updateUI();
-        });
-        
-        window.onload = updateUI;
-    </script>
-
-</body>
-</html>
+            update
